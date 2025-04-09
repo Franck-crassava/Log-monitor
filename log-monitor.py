@@ -2,12 +2,18 @@ import argparse
 import time
 import os
 import sys
+from datetime import datetime
+
+try:
+    from termcolor import colored
+except ImportError:
+    print("[!] 'termcolor' module is not installed. Run 'pip install termcolor' to enable color highlighting.")
+    def colored(text, color): return text  # fallback
 
 def monitor_log(filepath, keyword=None, save_path=None, show_timestamp=False):
     try:
         with open(filepath, 'r') as file:
-            # Aller à la fin du fichier
-            file.seek(0, os.SEEK_END)
+            file.seek(0, os.SEEK_END)  # Go to end of file
 
             while True:
                 line = file.readline()
@@ -20,7 +26,12 @@ def monitor_log(filepath, keyword=None, save_path=None, show_timestamp=False):
 
                 output = line.strip()
                 if show_timestamp:
-                    output = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {output}"
+                    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    output = f"[{timestamp}] {output}"
+
+                # Highlight keyword in color
+                if keyword:
+                    output = output.replace(keyword, colored(keyword, 'red', attrs=['bold']))
 
                 print(output)
 
@@ -36,11 +47,11 @@ def monitor_log(filepath, keyword=None, save_path=None, show_timestamp=False):
         sys.exit(0)
 
 def main():
-    parser = argparse.ArgumentParser(description='Real-time log file monitor with optional filtering and saving.')
+    parser = argparse.ArgumentParser(description='Real-time log file monitor with keyword filtering and output options.')
     parser.add_argument('file', help='Path to the log file to monitor')
-    parser.add_argument('--filter', help='Keyword to filter lines')
-    parser.add_argument('--save', help='Path to save matched lines')
-    parser.add_argument('--timestamp', action='store_true', help='Include timestamps in output')
+    parser.add_argument('--filter', help='Keyword to filter and highlight')
+    parser.add_argument('--save', help='File path to save matched lines')
+    parser.add_argument('--timestamp', action='store_true', help='Include timestamp in output')
 
     args = parser.parse_args()
 
@@ -48,4 +59,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
